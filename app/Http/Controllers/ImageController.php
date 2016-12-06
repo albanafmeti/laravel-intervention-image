@@ -7,34 +7,42 @@ use Illuminate\Support\Facades\File;
 class ImageController extends Controller
 {
 
-    public $images_path = "assets/images";
-
-    function __construct()
+    public function getImageThumbnail($path, $width = null, $height = null, $type = "fit")
     {
-        $this->images_path = config('definitions.images_path');
-    }
 
-    public function getImageThumbnail($path, $width, $height, $type = "fit")
-    {
+        $images_path = config('definitions.images_path');
+        $path = ltrim($path, "/");
+
+        //returns the original image if isn't passed width and height
         if (is_null($width) && is_null($height)) {
-            return url("{$this->images_path}/" . ltrim($path, "/"));
+            return url("{$images_path}/" . $path);
         }
 
-        if (File::exists(public_path("{$this->images_path}/thumbs/" . "{$width}x{$height}/" . ltrim($path, "/")))) {
-            return url("{$this->images_path}/thumbs/" . "{$width}x{$height}/" . ltrim($path, "/"));
+        //if thumbnail exist returns it
+        if (File::exists(public_path("{$images_path}/thumbs/" . "{$width}x{$height}/" . $path))) {
+            return url("{$images_path}/thumbs/" . "{$width}x{$height}/" . $path);
         }
 
-        if (!File::exists(public_path("{$this->images_path}/" . ltrim($path, "/")))) {
+        //If original image doesn't exists returns a default image which shows that original image doesn't exist.
+        if (!File::exists(public_path("{$images_path}/" . $path))) {
+
+            /*
+             * 2 ways
+             */
+
+            //1. recursive call for the default image
             //return $this->getImageThumbnail("error/no-image.png", $width, $height, $type);
+
+            //2. returns an image placeholder generated from placehold.it
             return "http://placehold.it/{$width}x{$height}";
         }
 
         $allowedMimeTypes = ['image/jpeg', 'image/gif', 'image/png'];
-        $contentType = mime_content_type("{$this->images_path}/" . ltrim($path, "/"));
+        $contentType = mime_content_type("{$images_path}/" . $path);
 
-        if (in_array($contentType, $allowedMimeTypes) && file_exists(public_path("{$this->images_path}/" . ltrim($path, "/")))) {
+        if (in_array($contentType, $allowedMimeTypes)) { //Checks if is an image
 
-            $image = Image::make(public_path("{$this->images_path}/" . ltrim($path, "/")));
+            $image = Image::make(public_path("{$images_path}/" . $path));
 
             switch ($type) {
                 case "fit": {
@@ -44,21 +52,40 @@ class ImageController extends Controller
                     break;
                 }
                 case "resize": {
+                    //stretched
                     $image->resize($width, $height, function ($constraint) {
-                        $constraint->aspectRatio();
+                        $constraint->upsize();
                     });
+                }
+                case "background": {
+                    $image->resize($width, $height, function ($constraint) {
+                        //keeps aspect ratio and sets black background
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+                }
+                case "resizeCanvas": {
+                    $image->resizeCanvas($width, $height, 'center', false, 'rgba(0, 0, 0, 0)'); //gets the center part
                 }
             }
 
-            $parts = explode("/", ltrim($path, "/"));
-            array_pop($parts);
-            $dir_path = implode("/", $parts);
+            //relative directory path starting from main directory of images
+            $dir_path = (dirname($path) == '.') ? "" : dirname($path);
 
-            if (!File::exists(public_path("{$this->images_path}/thumbs/" . "{$width}x{$height}/" . $dir_path))) {
-                File::makeDirectory(public_path("{$this->images_path}/thumbs/" . "{$width}x{$height}/" . $dir_path), 0775, true);
+            //Create the directory if it doesn't exist
+            if (!File::exists(public_path("{$images_path}/thumbs/" . "{$width}x{$height}/" . $dir_path))) {
+                File::makeDirectory(public_path("{$images_path}/thumbs/" . "{$width}x{$height}/" . $dir_path), 0775, true);
             }
-            $image->save(public_path("{$this->images_path}/thumbs/" . "{$width}x{$height}/" . ltrim($path, "/")));
-            return url("{$this->images_path}/thumbs/" . "{$width}x{$height}/" . ltrim($path, "/"));
+
+            //Save the thumbnail
+            $image->save(public_path("{$images_path}/thumbs/" . "{$width}x{$height}/" . $path));
+
+            //return the url of the thumbnail
+            return url("{$images_path}/thumbs/" . "{$width}x{$height}/" . $path);
+        } else {
+
+            //return a placeholder image
+            return "http://placehold.it/{$width}x{$height}";
         }
     }
 }

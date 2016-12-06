@@ -34,25 +34,25 @@
 
         <div class="col-sm-3 col-xs-6">
             <a href="#">
-                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-1.jpg", 500, 300, "fit") }}" alt="">
+                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-1.jpg", 500, 300, "background") }}" alt="">
             </a>
         </div>
 
         <div class="col-sm-3 col-xs-6">
             <a href="#">
-                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-2s.jpg", 500, 300, "fit") }}" alt="">
+                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-2s.jpg", 500, 300, "background") }}" alt="">
             </a>
         </div>
 
         <div class="col-sm-3 col-xs-6">
             <a href="#">
-                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-3.jpg", 500, 300, "fit") }}" alt="">
+                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-3.jpg", 500, 300, "background") }}" alt="">
             </a>
         </div>
 
         <div class="col-sm-3 col-xs-6">
             <a href="#">
-                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-4.jpg", 500, 300, "fit") }}" alt="">
+                <img class="img-responsive portfolio-item" src="{{ getThumbnail("projects/project-4.jpg", 500, 300, "background") }}" alt="">
             </a>
         </div>
 
